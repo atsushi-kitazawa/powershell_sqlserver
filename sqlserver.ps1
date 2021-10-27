@@ -32,7 +32,7 @@ function select_t1([string]$pServer, [string]$pDatabase, [string]$pUser, [string
     $pSQLConnection.Close()
 }
 
-function insert_varbinary_from_file([string]$pServer, [string]$pDatabase, [string]$pUser, [string]$pPassword) {
+function select_varbinary([string]$pServer, [string]$pDatabase, [string]$pUser, [string]$pPassword) {
     # Connection
     $pSQLConnection = New-Object System.Data.SqlClient.SqlConnection
     $pSQLConnection.ConnectionString = "Data Source=$($pServer);Initial Catalog=$($pDatabase);User ID=$($pUser);Password=$($pPassword)"
@@ -56,6 +56,8 @@ function insert_varbinary_from_file([string]$pServer, [string]$pDatabase, [strin
 
 function main() {
     select_t1 -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password
+
+    select_varbinary -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password | Set-Content "sqlcmd.bin" -Encoding Byte
 }
 
 main
