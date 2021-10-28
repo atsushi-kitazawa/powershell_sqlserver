@@ -54,10 +54,33 @@ function select_varbinary([string]$pServer, [string]$pDatabase, [string]$pUser, 
     return $return
 }
 
-function main() {
-    select_t1 -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password
+function insert_file_to_varbinary([string]$pServer, [string]$pDatabase, [string]$pUser, [string]$pPassword, [string]$pFilename, [string]$pFilepath) {
+        # Connection
+        $pSQLConnection = New-Object System.Data.SqlClient.SqlConnection
+        $pSQLConnection.ConnectionString = "Data Source=$($pServer);Initial Catalog=$($pDatabase);User ID=$($pUser);Password=$($pPassword)"
+        $pSQLConnection.Open()
+    
+        # Query
+        $query = "insert into t2(file_id, file_contents) select '{0}' as file_id, * from OPENROWSET(BULK N'{1}', SINGLE_BLOB) AS file_contents"
+        $query = [String]::Format($query, $pFilename, $pFilepath)
+    
+        # Command
+        [System.Data.SqlClient.SqlCommand]$cmd = New-Object System.Data.SqlClient.SqlCommand($query, $pSQLConnection)
+    
+        # Execute and Get scalar value
+        $ret = $cmd.ExecuteNonQuery()
+        Write-Output $ret
 
-    select_varbinary -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password | Set-Content "sqlcmd.bin" -Encoding Byte
+        # Close Connection
+        $pSQLConnection.Close()
+}
+
+function main() {
+    #select_t1 -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password
+
+    #select_varbinary -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password | Set-Content "sqlcmd.bin" -Encoding Byte
+
+    insert_file_to_varbinary -pServer "$server,$port" -pDatabase $database -pUser $user -pPassword $password -pFileName "aaa.txt" -pFilepath '/var/opt/mssql/data/aaa.txt'
 }
 
 main
